@@ -3,6 +3,9 @@
 # Swap files
 *.swp
 
+# Rope
+.ropeproject/
+
 # C extensions
 *.so
 

@@ -8,9 +8,10 @@ import variantCompare
 
 class TestParameters(unittest.TestCase):
 
-	##########################
-	# Test --input parameter #
-	##########################
+	###############################################
+	# Test --input parameter. This should suffice #
+	# for --pinput and --binput as well.          #
+	###############################################
 	def test_input_operation_parameter(self):
 		parser = variantCompare.create_options_parser()
 

@@ -54,7 +54,14 @@ class SetOperation(object):
             self.operName = info[0]
             self.operIndex = 1
 
-        self.operator = re.match("\d", info[self.operIndex])  # take the first character
+        # Get first character and everything in the main brackets
+        self.match = re.search("^(\w)\[(.+)\]$", info[self.operIndex])
+        print self.match.groups()
+
+        matches = self.match.groups()
+        self.operator = matches[1]
+
+        # TODO: Get the rest
 
 
 class InputFileParamError(Exception):

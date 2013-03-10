@@ -27,23 +27,24 @@ class RegexValidator(object):
 
 def create_options_parser():
 
-    exampleOper = """Here is an example intersect on two unions:
-                        \'-s out1=u[fId1:sId1,fId1:sId2,fId2:sId3]
-                         out2=u[fId3:sId4,fId3:sId5] out3=i[out1,out2]\'."""
+    exampleOper = "Here is an example intersect on two unions:\n" +\
+        "\'-s out1=u[fId1[sId1,sId2]:fId2[sId3]]\n" +\
+        "out2=u[fId3[sId4,sId5]:fId4[sId6]] out3=i[out1,out2]\'."
+    operFormat = """<name>=<operator>[<input_name>[<sample_id1>,<sample_id2>,etc.]:<input_name>[<sample_id3>,<sample_id4>,etc.]:etc.]\n"""
+    operDesc = "where \'<name>\' is a user provided name of the operation\n" +\
+        "(can be referenced in other operations), \'<operator>\'\n" +\
+        "may be any of union ([uU]), intersect ([iI]), and\n" +\
+        "complement ([cC]), \'<input_name>\' is a user-provided\n" +\
+        "file input name (see --input), and \'<sample_id>\' is a\n" +\
+        "sample id within an input file."
     inputRV = RegexValidator(
         "^((\w+)=)?([a-zA-Z0-9,\.'()_\s-]+\.*[a-zA-Z0-9,\s-]*)$",
         """Input files must conform to \'<fId>=<filename>\' or just
         \'<filename>\', where \'<fId>\' is a new name for the input file to be
         used in \'--set-operation\'. See \'help\' for details.""")
     operatorRV = RegexValidator(
-        "^((\w+)=)?[iIuUcC]\[(\w+(:\w+)?)(,\w+(:\w+)?)*\]$",
-        """Set operations must conform to
-        <name>=<operation>(<input_name>:<sample_id>,<input_name>:<sample_id>,etc.),
-        where \'<name>\' is a user provided name of the operation that can be
-        reused in other operations, \'<operation>\' may be any of union ([uU]),
-        intersect ([iI]), and complement ([cC]), \'<input_name>\' is
-        a user-provided file input name (see --input in \'help\'), and
-        \'<sample_id>\' is a sample id within an input file. """ + exampleOper)
+        "^((\w+)=)?[iIuUcC]\[(\w+(\[\w+(,\w+)*\])?)(:\w+(\[\w+(,\w+)*\])?)*\]$",
+        "\nSet operations must conform to \n" + operFormat + operDesc + "\n" + exampleOper)
 
     parser = argparse.ArgumentParser(
         description='Compare variants across individuals',
@@ -78,18 +79,12 @@ def create_options_parser():
                         named (see --input). If names are excluded, binary
                         plink input files will be named \'<b1>\', \'<b2>\',
                         etc.""")
-    group.add_argument('-s', '--set-operation', dest="operation",
+    group.add_argument('-s', '--set-operation', dest='operation', nargs='+',
                        type=operatorRV,
                        help="""Specify a set operation between one or more
-                        input files. Set operations are formatted as follows:
-                        <name>=<operation>[<input_name>:<sample_id>,<input_name>:<sample_id>,etc.],
-                        where \'<name>\' is a user provided name of the
-                        operation (can be referenced in other operations),
-                        \'<operation>\' may be any of union ([uU]), intersect
-                        ([iI]), and complement ([cC]), \'<input_name>\' is
-                        a user-provided file input name (see --input), and
-                        \'<sample_id>\' is a sample id within an input
-                        file. If only file input names (\'<input_name>\') are
+                        input files. Set operations are formatted as follows: """ +
+                       operFormat + operDesc +
+                       """ If only file input names (\'<input_name>\') are
                         provided in the operation, all samples within those
                         files will be used. If names are excluded, set
                         operations will be named \'<s1>\', \'<s2>\',

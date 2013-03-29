@@ -30,7 +30,8 @@ def create_options_parser():
     exampleOper = "Here is an example intersect on two unions:\n" +\
         "\'-s out1=u[fId1[sId1,sId2]:fId2[sId3]]\n" +\
         "out2=u[fId3[sId4,sId5]:fId4[sId6]] out3=i[out1,out2]\'."
-    operFormat = """<name>=<operator>[<input_name>[<sample_id1>,<sample_id2>,etc.]:<input_name>[<sample_id3>,<sample_id4>,etc.]:etc.]\n"""
+    operFormat = "<name>=<operator>[<input_name>[<sample_id1>,<sample_id2>,etc.]:<input_name>[<sample_id3>," +\
+                 "<sample_id4>,etc.]:etc.]\n"
     operDesc = "where \'<name>\' is a user provided name of the operation\n" +\
         "(can be referenced in other operations), \'<operator>\'\n" +\
         "may be any of union ([uU]), intersect ([iI]), and\n" +\
@@ -121,32 +122,58 @@ def main():
     print args
 
     # Handle input files
-    if args.VCF is not None:
-        vcfInputs = []
+    variant_sets = parse_input_files(args.VCF, args.plink, args.binary)
+
+    try:
+        # Handle set operations
+        operations = parse_operations(args.operation, variant_sets)
+        print operations
+    except param_structures.InputFileParamError as e:
+        print >> sys.stderr, e.value
+        exit(1)
+
+
+def parse_input_files(vcf_args, plink_args, bin_args):
+    variantSets = set()
+    if vcf_args is not None:
         prefix = 'i'
-        for i, v in enumerate(args.VCF):
-            vcfInput = param_structures.InputFileInfo(i, v, prefix)
-            vcfInputs.append(vcfInput)
+        vcfInputs = param_structures.InputFiles(vcf_args, prefix)
+        variantSets.update(vcfInputs.inputFiles.keys())
 
-    if args.plink is not None:
-        plinkInputs = []
+    if plink_args is not None:
         prefix = 'p'
-        for i, v in enumerate(args.plink):
-            pIn = param_structures.InputFileInfo(i, v, prefix)
-            plinkInputs.append(pIn)
+        plinkInputs = param_structures.InputFiles(plink_args, prefix)
+        variantSets.update(plinkInputs.inputFiles)
 
-    if args.binary is not None:
-        binInputs = []
+    if bin_args is not None:
         prefix = 'b'
-        for i, v in enumerate(args.binary):
-            bIn = param_structures.InputFileInfo(i, v, prefix)
-            binInputs.append(bIn)
+        binInputs = param_structures.InputFiles(bin_args, prefix)
+        variantSets.update(binInputs.inputFiles)
 
-    # Handle set operations
-    operations = []
-    for i, v in enumerate(args.operation):
-        op = param_structures.SetOperation(i, v)
-        operations.append(op)
+    return variantSets
+
+
+def parse_operations(oper_args, variant_sets):
+
+    operations = param_structures.OperationList()
+    if oper_args is not None:
+        invalidInputNames = set()
+        for i, v in enumerate(oper_args):
+            op = param_structures.SetOperation(i, v)
+            operations.append(op)
+            variant_sets.add(op.oper_id)
+
+            # Test if input file names used in operation exist
+            # in the input file parameters
+            invalidInputNames.update(set(op.file_and_samples_dict) - variant_sets)
+
+        if len(invalidInputNames) > 0:
+            invalidStr = ", ".join(sorted(list(invalidInputNames)))
+            raise param_structures.InputFileParamError("The following file input name(s) is/are not recognized: \'"
+                    + invalidStr + "\'. They must be defined in an input parameter. See '--input' for details.")
+
+    return operations
+
 
 if __name__ == '__main__':
     main()

@@ -165,6 +165,13 @@ def parseBinary(baseName, records, selectIndividuals):
 		alt = markerData[4];
 		ref = markerData[5];
 
+		# the default missing characer for plink is '0'
+		# for vcf files it is '.'
+		if alt == '0':
+			alt = '.';
+		if ref == '0':
+			ref = '.';
+
 		qual = None;
 		filter = None;
 		info = None;
@@ -388,10 +395,11 @@ def main():
 		print("USAGE: python ParsePlinkFileIntoVcfFormat [-b] <file_base_name>"); 
 		sys.exit(1);
 
-	for record in result:
-		print(str(record));
-		for sample in record.samples:
-			print("\t" + str(sample));
+	if result != None:
+		for record in result:
+			print(str(record));
+			for sample in record.samples:
+				print("\t" + str(sample));
 
 if __name__ == "__main__":
 	main();

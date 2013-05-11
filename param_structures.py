@@ -19,7 +19,7 @@ class InputFileInfo(object):
         # if len(info) == 1, user did not specify name
         if (len(info) == 1):
             self.fileName = info[0]
-            self.userFileName = prefix + count
+            self.userFileName = prefix + str(count)
 
         elif (len(info) > 2):
             raise InputFileParamError('Unexpected input file parameter: ', fileinfo)

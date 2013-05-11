@@ -4,6 +4,7 @@ import re
 import sys
 
 import param_structures
+import plinkToVCFParser
 
 
 class RegexValidator(object):
@@ -147,6 +148,24 @@ def main():
     for i, v in enumerate(args.operation):
         op = param_structures.SetOperation(i, v)
         operations.append(op)
+	
+	nameToRecords = {};
+#	if (args.VCF is not None):
+#		associate each VCF file name with the list
+#		of records contained in the file
+	if (args.plink is not None):
+		for input in plinkInputs:
+			name = input.userFileName;
+			fileName = input.fileName;
+			records = plinkToVCFParser.doParse(fileName, False);
+			nameToRecords[name] = records;
+	if (args.binary is not None):
+		for input in binInputs:
+			name = input.userFileName;
+			fileName = input.fileName;
+			records = plinkToVCFParser.doParse(fileName, True);
+			nameToRecords[name] = records;
+	print(str(nameToRecords));
 
 if __name__ == '__main__':
     main()

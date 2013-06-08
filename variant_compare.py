@@ -31,18 +31,18 @@ def create_options_parser():
     exampleOper = "Here is an example intersect on two unions:\n" +\
         "\'-s out1=u[fId1[sId1,sId2]:fId2[sId3]]\n" +\
         "out2=u[fId3[sId4,sId5]:fId4[sId6]] out3=i[out1,out2]\'."
-    operFormat = "<name>=<operator>[<input_name>[<sample_id1>,<sample_id2>,etc.]:<input_name>[<sample_id3>," +\
+    operFormat = "<oper_id>=<operator>[<input_id1>[<sample_id1>,<sample_id2>,etc.]:<input_id2>[<sample_id3>," +\
                  "<sample_id4>,etc.]:etc.]\n"
-    operDesc = "where \'<name>\' is a user provided name of the operation\n" +\
+    operDesc = "where \'<oper_id>\' is a user provided ID of the operation\n" +\
         "(can be referenced in other operations), \'<operator>\'\n" +\
         "may be any of union ([uU]), intersect ([iI]), and\n" +\
-        "complement ([cC]), \'<input_name>\' is a user-provided\n" +\
-        "file input name (see --input), and \'<sample_id>\' is a\n" +\
-        "sample id within an input file."
+        "complement ([cC]), \'<input_id>\' is a user-provided\n" +\
+        "file input ID (see --input), and \'<sample_id>\' is a\n" +\
+        "sample ID within an input file."
     inputRV = RegexValidator(
         "^((\w+)=)?([a-zA-Z0-9,\.'()_\s-]+\.*[a-zA-Z0-9,\s-]*)$",
         """Input files must conform to \'<fId>=<filename>\' or just
-        \'<filename>\', where \'<fId>\' is a new name for the input file to be
+        \'<filename>\', where \'<fId>\' is a new ID for the input file to be
         used in \'--set-operation\'. See \'help\' for details.""")
     operatorRV = RegexValidator(
         "^((\w+)=)?[iIuUcC]\[(\w+(\[\w+(,\w+)*\])?)(:\w+(\[\w+(,\w+)*\])?)*\]$",
@@ -57,41 +57,41 @@ def create_options_parser():
     parser.add_argument('-i', '--input', dest='VCF', nargs='+',
                         type=inputRV,
                         help="""Specify a VCF input file. Multiple files may be
-                        specified at once. The input file can be named
+                        specified at once. An ID may be provided for the input file
                         for use in --set-operation as follows \'--input
                         <fId>=<input.vcf> <fId2>=<input2.vcf>\', where
-                        \'<fId>\' and \'<fId2>\' are the new names. If names
-                        are excluded, input files will be named \'<i0>\',
-                        \'<i1>\', etc. by default. The new name may only
+                        \'<fId>\' and \'<fId2>\' are the new IDs. If IDs
+                        are excluded, IDs will be assigned as \'<i0>\',
+                        \'<i1>\', etc. by default. The new ID may only
                         consist of letter, digits, and underscores.""")
     parser.add_argument('-p', '--pinput', dest='plink', nargs='+',
                         type=inputRV,
                         help="""Specify root file name for plink input (e.g.
                         \'myplink\' will expect \'myplink.ped\'
-                        and \'myplink.map\'). Can be used repeatedly. These
-                        input files may also be named (see
-                        --input). If names are excluded, plink input files will
-                        be named \'<p0>\', \'<p1>\', etc.""")
+                        and \'myplink.map\'). Can be used repeatedly. IDs may also
+                        be provided for plink input files (see
+                        --input). If IDs are excluded, plink input files will
+                        be given IDs as \'<p0>\', \'<p1>\', etc.""")
     parser.add_argument('-b', '--binput', dest='binary', nargs='+',
                         type=inputRV,
                         help="""Specify root file name for binary plink input
                         (e.g. \'myplink\' will expect \'myplink.bed\',
                         \'myplink.fam\', and \'smyplink.bim\').
-                        Can be used repeatedly. These input files may also be
-                        named (see --input). If names are excluded, binary
-                        plink input files will be named \'<b0>\', \'<b1>\',
+                        Can be used repeatedly. IDs may also be provided for binary plink
+                        input files IDs (see --input). If IDs are excluded, binary
+                        plink input files will be given IDs as \'<b0>\', \'<b1>\',
                         etc.""")
     group.add_argument('-s', '--set-operation', dest='operation', nargs='+',
                        type=operatorRV,
                        help="""Specify a set operation between one or more
                         input files. Set operations are formatted as follows: """ +
                        operFormat + operDesc +
-                       """ If only file input names (\'<input_name>\') are
+                       """ If only file IDs (i.e. \'<fId>\') are
                         provided in the operation, all samples within those
-                        files will be used. If names are excluded, set
-                        operations will be named \'<s0>\', \'<s1>\',
+                        files will be used. If operation IDs (i.e. <oper_id>) are excluded, set
+                        operations will be given IDs as \'<s0>\', \'<s1>\',
                         etc. """ + exampleOper + """An \'fId\' refers to a
-                       named file (see --input) and an \'sId\' refers to a
+                       file ID (see --input) and an \'sId\' refers to a
                        sample within that file.""")
     group.add_argument('-a', '--association', dest="phenotype_file",
                        help="""Perform an association study between phenotypes...""")
@@ -101,7 +101,7 @@ def create_options_parser():
                         help="""Print intermediate files such as when
                             performing multiple set operations. Intermediate
                             files will be named according to the --set-operation
-                            names (e.g. \'out0.vcf\', \'out1.vcf\', etc.)""",)
+                            IDs (e.g. \'out0.vcf\', \'out1.vcf\', etc.)""",)
     parser.add_argument('-k', '--keep-homozygotes', action="store_true",
                         help="""List homozygotes in output when both hetero-
                         and homozygotes are present for the same variant.""")
@@ -124,6 +124,26 @@ def main():
 
     # Handle input files
     variant_sets = parse_input_files(args.VCF, args.plink, args.binary)
+
+    print variant_sets;
+
+    """nameToRecords = {};
+    #	if (args.VCF is not None):
+    #		associate each VCF file name with the list
+    #		of records contained in the file
+    if args.plink is not None:
+        for input in plinkInputs:
+            name = input.userFileName;
+            fileName = input.fileName;
+            records = plinkToVCFParser.doParse(fileName, False);
+            nameToRecords[name] = records;
+    if args.binary is not None:
+        for input in binInputs:
+            name = input.userFileName;
+            fileName = input.fileName;
+            records = plinkToVCFParser.doParse(fileName, True);
+            nameToRecords[name] = records;
+    print(str(nameToRecords));"""
 
     try:
         # Handle set operations
@@ -170,8 +190,9 @@ def parse_operations(oper_args, variant_sets):
 
         if len(invalidInputNames) > 0:
             invalidStr = ", ".join(sorted(list(invalidInputNames)))
-            raise param_structures.InputFileParamError("The following file input name(s) is/are not recognized: \'"
-                    + invalidStr + "\'. They must be defined in an input parameter. See '--input' for details.")
+            raise param_structures.InputFileParamError("The following file input or operation ID(s) is/are not"
+                    + " recognized: \'" + invalidStr + "\'. They must be defined in either an input or previous set"
+                    + " operation parameter. See '--input' for details.")
 
     return operations
 

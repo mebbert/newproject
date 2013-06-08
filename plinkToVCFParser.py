@@ -1,6 +1,6 @@
 #!/usr/bin python 
-import string;
-import vcf;
+import string
+import vcf
 
 
 """

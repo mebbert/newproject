@@ -247,8 +247,8 @@ class TestParameters(unittest.TestCase):
             # operation used in its own definition
             inargs = "-i f1=b.vcf -s out3=c[f1:out3]"
             args = parser.parse_args(inargs.split())
-            variant_sets = variant_compare.parse_input_files(args.VCF, args.plink, args.binary)
-            operations = variant_compare.parse_operations(args.operation, variant_sets)
+            variant_sets = variant_compare.parse_input_file_args(args.VCF, args.plink, args.binary)
+            operations = variant_compare.parse_operation_args(args.operation, variant_sets)
             self.fail("Failed to detect error in: " + inargs)
         except param_structures.InputFileParamError:
             self.assertTrue(True)
@@ -256,8 +256,8 @@ class TestParameters(unittest.TestCase):
             # operation uses undefined input file
             inargs = "-i f1=b.vcf -s out3=c[f2]"
             args = parser.parse_args(inargs.split())
-            variant_sets = variant_compare.parse_input_files(args.VCF, args.plink, args.binary)
-            operations = variant_compare.parse_operations(args.operation, variant_sets)
+            variant_sets = variant_compare.parse_input_file_args(args.VCF, args.plink, args.binary)
+            operations = variant_compare.parse_operation_args(args.operation, variant_sets)
             self.fail("Failed to detect error in: " + inargs)
         except param_structures.InputFileParamError:
             self.assertTrue(True)

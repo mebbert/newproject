@@ -4,6 +4,7 @@ import re
 import sys
 
 import param_structures
+import plinkToVCFParser
 
 
 class RegexValidator(object):
@@ -60,8 +61,8 @@ def create_options_parser():
                         for use in --set-operation as follows \'--input
                         <fId>=<input.vcf> <fId2>=<input2.vcf>\', where
                         \'<fId>\' and \'<fId2>\' are the new names. If names
-                        are excluded, input files will be named \'<i1>\',
-                        \'<i2>\', etc. by default. The new name may only
+                        are excluded, input files will be named \'<i0>\',
+                        \'<i1>\', etc. by default. The new name may only
                         consist of letter, digits, and underscores.""")
     parser.add_argument('-p', '--pinput', dest='plink', nargs='+',
                         type=inputRV,
@@ -70,7 +71,7 @@ def create_options_parser():
                         and \'myplink.map\'). Can be used repeatedly. These
                         input files may also be named (see
                         --input). If names are excluded, plink input files will
-                        be named \'<p1>\', \'<p2>\', etc.""")
+                        be named \'<p0>\', \'<p1>\', etc.""")
     parser.add_argument('-b', '--binput', dest='binary', nargs='+',
                         type=inputRV,
                         help="""Specify root file name for binary plink input
@@ -78,7 +79,7 @@ def create_options_parser():
                         \'myplink.fam\', and \'smyplink.bim\').
                         Can be used repeatedly. These input files may also be
                         named (see --input). If names are excluded, binary
-                        plink input files will be named \'<b1>\', \'<b2>\',
+                        plink input files will be named \'<b0>\', \'<b1>\',
                         etc.""")
     group.add_argument('-s', '--set-operation', dest='operation', nargs='+',
                        type=operatorRV,
@@ -88,7 +89,7 @@ def create_options_parser():
                        """ If only file input names (\'<input_name>\') are
                         provided in the operation, all samples within those
                         files will be used. If names are excluded, set
-                        operations will be named \'<s1>\', \'<s2>\',
+                        operations will be named \'<s0>\', \'<s1>\',
                         etc. """ + exampleOper + """An \'fId\' refers to a
                        named file (see --input) and an \'sId\' refers to a
                        sample within that file.""")
@@ -100,7 +101,7 @@ def create_options_parser():
                         help="""Print intermediate files such as when
                             performing multiple set operations. Intermediate
                             files will be named according to the --set-operation
-                            names (e.g. \'out1.vcf\', \'out2.vcf\', etc.)""",)
+                            names (e.g. \'out0.vcf\', \'out1.vcf\', etc.)""",)
     parser.add_argument('-k', '--keep-homozygotes', action="store_true",
                         help="""List homozygotes in output when both hetero-
                         and homozygotes are present for the same variant.""")
